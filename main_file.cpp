@@ -36,13 +36,14 @@ Place, Fifth Floor, Boston, MA  02110 - 1301  USA
 #include "shaderprogram.h"
 #include "myCube.h"
 #include "myTeapot.h"
+#include "model.h"
 
 float speed_x=0;
 float speed_y=0;
 float aspectRatio=1;
 
 ShaderProgram *sp;
-
+Model skeleton;
 
 //Odkomentuj, żeby rysować kostkę
 //float* vertices = myCubeVertices;
@@ -59,11 +60,6 @@ ShaderProgram *sp;
 //float* colors = myTeapotColors;
 //int vertexCount = myTeapotVertexCount;
 
-
-std::vector<glm::vec4> verts;
-std::vector<glm::vec4> norms;
-std::vector<glm::vec2> texCoords;
-std::vector<unsigned int> indices;
 
 GLuint tex;
 
@@ -114,48 +110,13 @@ void windowResizeCallback(GLFWwindow* window,int width,int height) {
     glViewport(0,0,width,height);
 }
 
-void loadModel(std::string plik) {
-	Assimp::Importer importer;
-	const aiScene* scene = importer.ReadFile(plik,
-		aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenSmoothNormals);
-	std::cout << importer.GetErrorString() << std::endl;
-
-	if (scene == NULL) {
-		return;
-	}
-
-	
-
-	aiMesh* mesh = scene->mMeshes[0];
-
-	for (int i = 0; i < mesh->mNumVertices; i++) {
-		aiVector3D vertex = mesh->mVertices[i];
-		verts.push_back(glm::vec4(vertex.x, vertex.y, vertex.z, 1));
-
-		aiVector3D normal = mesh->mNormals[i];
-		norms.push_back(glm::vec4(normal.x, normal.y, normal.z, 0));
-
-		aiVector3D texCoord = mesh->mTextureCoords[0][i];
-		texCoords.push_back(glm::vec2(texCoord.x, texCoord.y));
-	}
-
-	std::cout << mesh->mNumFaces << std::endl;
-
-	for (int i = 0; i < mesh->mNumFaces/12; i++) {
-		aiFace& face = mesh->mFaces[i]; 
-		for (int j = 0; j < face.mNumIndices; j++) {
-			indices.push_back(face.mIndices[j]);
-		}
-	}
-
-}
 
 //Procedura inicjująca
 void initOpenGLProgram(GLFWwindow* window) {
 	//************Tutaj umieszczaj kod, który należy wykonać raz, na początku programu************
 	glClearColor(0,0,0,1);
 	glEnable(GL_DEPTH_TEST);
-	loadModel("uploads_files_600310_skeleton_animated.FBX");
+	skeleton.loadModel("uploads_files_600310_skeleton_animated.FBX");
 	tex = readTexture("Skeleton_Body_AlbedoTransparency.png");
 	glfwSetWindowSizeCallback(window,windowResizeCallback);
 	glfwSetKeyCallback(window,keyCallback);
@@ -170,8 +131,6 @@ void freeOpenGLProgram(GLFWwindow* window) {
 
     delete sp;
 }
-
-
 
 
 //Procedura rysująca zawartość sceny
@@ -199,21 +158,22 @@ void drawScene(GLFWwindow* window,float angle_x,float angle_y) {
 	M = glm::rotate(M, angle_x, glm::vec3(0.0f, 0.0f, 5.0f)); //Compute model matrix
 	glUniformMatrix4fv(sp->u("M"), 1, false, glm::value_ptr(M));
 
+	//std::cout << skieleton.getNorms().data() << std::endl;
 	glEnableVertexAttribArray(sp->a("vertex")); //Enable sending data to the attribute vertex
-	glVertexAttribPointer(sp->a("vertex"), 4, GL_FLOAT, false, 0, verts.data()); //Specify source of the data for the attribute vertex
+	glVertexAttribPointer(sp->a("vertex"), 4, GL_FLOAT, false, 0, skeleton.verts.data()); //Specify source of the data for the attribute vertex
 
 	glEnableVertexAttribArray(sp->a("normal")); //Enable sending data to the attribute color
-	glVertexAttribPointer(sp->a("normal"), 4, GL_FLOAT, false, 0, norms.data()); //Specify source of the data for the attribute normal
+	glVertexAttribPointer(sp->a("normal"), 4, GL_FLOAT, false, 0, skeleton.norms.data()); //Specify source of the data for the attribute normal
 
 	glEnableVertexAttribArray(sp->a("texCoord0"));
-	glVertexAttribPointer(sp->a("texCoord0"), 2, GL_FLOAT, false, 0, texCoords.data());
+	glVertexAttribPointer(sp->a("texCoord0"), 2, GL_FLOAT, false, 0, skeleton.texCoords.data());
 
 	glUniform1i(sp->u("textureMap0"), 0);
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, tex);
 
-	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, indices.data()); //Draw the object
+	glDrawElements(GL_TRIANGLES,skeleton.indices.size(), GL_UNSIGNED_INT, skeleton.indices.data()); //Draw the object
 
 	glDisableVertexAttribArray(sp->a("vertex")); //Disable sending data to the attribute vertex
 	glDisableVertexAttribArray(sp->a("normal")); //Disable sending data to the attribute normal
