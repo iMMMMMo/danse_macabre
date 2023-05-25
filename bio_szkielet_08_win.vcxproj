@@ -33,7 +33,9 @@
     <ClCompile Include="shaderprogram.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="f_bg.glsl" />
     <None Include="f_simplest.glsl" />
+    <None Include="v_bg.glsl" />
     <None Include="v_simplest.glsl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

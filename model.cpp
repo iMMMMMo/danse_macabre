@@ -12,8 +12,8 @@ void Model::loadModel(std::string plik) {
 
 	aiMesh* mesh = scene->mMeshes[0];
 
-	aiNode* rootNode = scene->mRootNode;
-	processBoneHierarchy(rootNode, mesh);
+	//aiNode* rootNode = scene->mRootNode;
+	//processBoneHierarchy(rootNode, mesh);
 
 
 	for (int i = 0; i < mesh->mNumVertices; i++) {
@@ -27,6 +27,15 @@ void Model::loadModel(std::string plik) {
 		texCoords.push_back(glm::vec2(texCoord.x, texCoord.y));
 	}
 
+	//for (int i = 0; i < leftHandBoneIndices.size(); i++) {
+	//	glm::mat4 rotationMat(1);
+	//	glm::vec3 pivotPoint(0.0f, 0.0f, 0.0f);
+	//	// Translate the matrix to the pivot point
+	//	rotationMat = glm::translate(rotationMat, pivotPoint);
+	//	rotationMat = glm::rotate(rotationMat, AI_DEG_TO_RAD(10), glm::vec3(0.0f, 1.0f, 0.0f));
+	//	rotationMat = glm::translate(rotationMat, -pivotPoint);
+	//	verts[leftHandBoneIndices[i]] = rotationMat * verts[leftHandBoneIndices[i]];
+	//}
 
 	for (int i = 0; i < mesh->mNumFaces; i++) {
 		aiFace& face = mesh->mFaces[i];
@@ -49,7 +58,7 @@ void Model::processBoneHierarchy(aiNode* node, const aiMesh* mesh)
 {
 	std::string boneName = node->mName.C_Str();
 	std::cout << boneName << std::endl;
-	std::string bodyElement = "Bip01_L_";
+	std::string bodyElement = "Bip01_Head";
 	if (boneName.substr(0, bodyElement.length()) == bodyElement) {
 		getBoneIndices(node, mesh);
 	}

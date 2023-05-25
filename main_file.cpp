@@ -41,27 +41,24 @@ Place, Fifth Floor, Boston, MA  02110 - 1301  USA
 float speed_x=0;
 float speed_y=0;
 float aspectRatio=1;
+glm::vec4 lightPos1 = glm::vec4(-5.0f, 0.0f, 0.0f, 1.0f);
+glm::vec4 lightPos2 = glm::vec4(5.0f, 0.0f, 0.0f, 1.0f);
+glm::vec4 lightColor1 = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
+glm::vec4 lightColor2 = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
 
 ShaderProgram *sp;
+ShaderProgram *sp_bg;
 Model skeleton;
 
-//Odkomentuj, żeby rysować kostkę
-//float* vertices = myCubeVertices;
-//float* normals = myCubeNormals;
-//float* texCoords = myCubeTexCoords;
-//float* colors = myCubeColors;
-//int vertexCount = myCubeVertexCount;
-
-
-//Odkomentuj, żeby rysować czajnik
-//float* vertices = myTeapotVertices;
-//float* normals = myTeapotNormals;
-//float* texCoords = myTeapotTexCoords;
-//float* colors = myTeapotColors;
-//int vertexCount = myTeapotVertexCount;
-
-
 GLuint tex;
+
+//Odkomentuj, żeby rysować kostkę
+float* vertices = myCubeVertices;
+float* normals = myCubeNormals;
+float* texCoords = myCubeTexCoords;
+float* colors = myCubeColors;
+int vertexCount = myCubeVertexCount;
+
 
 GLuint readTexture(const char* filename) { //Deklaracja globalna
 	GLuint tex;
@@ -95,6 +92,23 @@ void keyCallback(GLFWwindow* window,int key,int scancode,int action,int mods) {
         if (key==GLFW_KEY_RIGHT) speed_x=PI/2;
         if (key==GLFW_KEY_UP) speed_y=PI/2;
         if (key==GLFW_KEY_DOWN) speed_y=-PI/2;
+		// sterowanie swiatlami 
+		if (action == GLFW_KEY_1) {
+			lightColor1 = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
+			lightColor2 = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
+		}
+		if (action == GLFW_KEY_2) {
+			lightColor1 = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
+			lightColor2 = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f);
+		}
+		if (action == GLFW_KEY_3) {
+			lightColor1 = glm::vec4(0.5f, 0.5f, 0.0f, 1.0f);
+			lightColor2 = glm::vec4(0.0f, 0.5f, 0.5f, 1.0f);
+		}
+		if (action == GLFW_KEY_4) {
+			lightColor1 = glm::vec4(0.8f, 0.2f, 0.6f, 1.0f);
+			lightColor2 = glm::vec4(0.4f, 0.6f, 0.9f, 1.0f);
+		}
     }
     if (action==GLFW_RELEASE) {
         if (key==GLFW_KEY_LEFT) speed_x=0;
@@ -102,6 +116,7 @@ void keyCallback(GLFWwindow* window,int key,int scancode,int action,int mods) {
         if (key==GLFW_KEY_UP) speed_y=0;
         if (key==GLFW_KEY_DOWN) speed_y=0;
     }
+	
 }
 
 void windowResizeCallback(GLFWwindow* window,int width,int height) {
@@ -113,7 +128,6 @@ void windowResizeCallback(GLFWwindow* window,int width,int height) {
 
 //Procedura inicjująca
 void initOpenGLProgram(GLFWwindow* window) {
-	//************Tutaj umieszczaj kod, który należy wykonać raz, na początku programu************
 	glClearColor(0,0,0,1);
 	glEnable(GL_DEPTH_TEST);
 	skeleton.loadModel("uploads_files_600310_skeleton_animated.FBX");
@@ -122,32 +136,19 @@ void initOpenGLProgram(GLFWwindow* window) {
 	glfwSetKeyCallback(window,keyCallback);
 
 	sp=new ShaderProgram("v_simplest.glsl",NULL,"f_simplest.glsl");
+	sp_bg= new ShaderProgram("v_bg.glsl", NULL, "f_bg.glsl");
 }
 
 
 //Zwolnienie zasobów zajętych przez program
 void freeOpenGLProgram(GLFWwindow* window) {
-    //************Tutaj umieszczaj kod, który należy wykonać po zakończeniu pętli głównej************
-
     delete sp;
 }
-
-
-//Procedura rysująca zawartość sceny
-void drawScene(GLFWwindow* window,float angle_x,float angle_y) {
-
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	glm::mat4 V = glm::lookAt(
-		glm::vec3(0.0f, 0.0f, -30.0f),
-		glm::vec3(0.0f, 0.0f, 0.0f),
-		glm::vec3(0.0f, 1.0f, 0.0f)); //compute view matrix
-	glm::mat4 P = glm::perspective(50.0f * PI / 180.0f, 1.0f, 1.0f, 50.0f); //compute projection matrix
-
-	sp->use();//activate shading program
-	//Send parameters to graphics card
-	glUniformMatrix4fv(sp->u("P"), 1, false, glm::value_ptr(P));
-	glUniformMatrix4fv(sp->u("V"), 1, false, glm::value_ptr(V));
+void drawSkeleton(float angle_x, float angle_y) {
+	glUniform4fv(sp->u("lightPos1"), 1, glm::value_ptr(lightPos1));
+	glUniform4fv(sp->u("lightPos2"), 1, glm::value_ptr(lightPos2));
+	glUniform4fv(sp->u("lightColor1"), 1, glm::value_ptr(lightColor1));
+	glUniform4fv(sp->u("lightColor2"), 1, glm::value_ptr(lightColor2));
 
 	glm::mat4 M = glm::mat4(1.0f);
 	M = glm::scale(M, glm::vec3(0.3f, 0.3f, 0.3f));
@@ -158,7 +159,6 @@ void drawScene(GLFWwindow* window,float angle_x,float angle_y) {
 	M = glm::rotate(M, angle_x, glm::vec3(0.0f, 0.0f, 5.0f)); //Compute model matrix
 	glUniformMatrix4fv(sp->u("M"), 1, false, glm::value_ptr(M));
 
-	//std::cout << skieleton.getNorms().data() << std::endl;
 	glEnableVertexAttribArray(sp->a("vertex")); //Enable sending data to the attribute vertex
 	glVertexAttribPointer(sp->a("vertex"), 4, GL_FLOAT, false, 0, skeleton.verts.data()); //Specify source of the data for the attribute vertex
 
@@ -173,11 +173,51 @@ void drawScene(GLFWwindow* window,float angle_x,float angle_y) {
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, tex);
 
-	glDrawElements(GL_TRIANGLES,skeleton.indices.size(), GL_UNSIGNED_INT, skeleton.indices.data()); //Draw the object
+	glDrawElements(GL_TRIANGLES, skeleton.indices.size(), GL_UNSIGNED_INT, skeleton.indices.data()); //Draw the object
+
 
 	glDisableVertexAttribArray(sp->a("vertex")); //Disable sending data to the attribute vertex
 	glDisableVertexAttribArray(sp->a("normal")); //Disable sending data to the attribute normal
 	glDisableVertexAttribArray(sp->a("texCoord0"));
+	
+}
+
+void drawBackground(float angle_x, float angle_y) {
+	glm::mat4 M = glm::mat4(1.0f);
+	M = glm::translate(M, glm::vec3(0.0f, 0.0f, 19.9f));
+	M = glm::scale(M, glm::vec3(25.0f, 25.0f, 25.0f));
+	
+	//Przeslij parametry programu cieniującego do karty graficznej
+	glUniformMatrix4fv(sp_bg->u("M"), 1, false, glm::value_ptr(M));
+
+	glEnableVertexAttribArray(sp_bg->a("vertex"));  //Włącz przesyłanie danych do atrybutu vertex
+	glVertexAttribPointer(sp_bg->a("vertex"), 4, GL_FLOAT, false, 0, vertices); //Wskaż tablicę z danymi dla atrybutu vertex
+
+	glDrawArrays(GL_TRIANGLES, 0, vertexCount); //Narysuj obiekt
+
+	glDisableVertexAttribArray(sp_bg->a("vertex"));  //Wyłącz przesyłanie danych do atrybutu vertex
+}
+
+//Procedura rysująca zawartość sceny
+void drawScene(GLFWwindow* window,float angle_x,float angle_y) {
+
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	glm::mat4 V = glm::lookAt(
+		glm::vec3(0.0f, 0.0f, -30.0f),
+		glm::vec3(0.0f, 0.0f, 0.0f),
+		glm::vec3(0.0f, 1.0f, 0.0f)); //compute view matrix
+	glm::mat4 P = glm::perspective(50.0f * PI / 180.0f, 1.0f, 1.0f, 50.0f); //compute projection matrix
+
+	sp->use();//activate shading program
+	glUniformMatrix4fv(sp->u("P"), 1, false, glm::value_ptr(P));
+	glUniformMatrix4fv(sp->u("V"), 1, false, glm::value_ptr(V));
+	drawSkeleton(angle_x, angle_y);
+	
+	sp_bg->use();//Aktywacja programu cieniującego
+	glUniformMatrix4fv(sp->u("P"), 1, false, glm::value_ptr(P));
+	glUniformMatrix4fv(sp->u("V"), 1, false, glm::value_ptr(V));
+	drawBackground(angle_x, angle_y);
 
 	glfwSwapBuffers(window); //Copy back buffer to front buffer
 }
