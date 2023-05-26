@@ -17,6 +17,7 @@ in vec4 lC2;
 out vec4 pixelColor;
 
 void main(void) {
+
     vec4 ml1 = normalize(l1);
     vec4 ml2 = normalize(l2);
     vec4 mn = normalize(n);
