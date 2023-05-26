@@ -15,6 +15,7 @@ class Model {
 		std::vector<glm::vec2> texCoords;
 		std::vector<unsigned int> indices;
 		std::vector<int> leftHandBoneIndices;
+		glm::vec4 rotateAround(glm::vec4 aPointToRotate, glm::vec4 aRotationCenter, glm::mat4x4 aRotationMatrix);
 		void loadModel(std::string plik);
 		void processBoneHierarchy(aiNode* node, const aiMesh* mesh);
 		void getBoneIndices(const aiNode* node, const aiMesh* mesh);

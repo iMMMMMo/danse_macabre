@@ -117,6 +117,9 @@ void initOpenGLProgram(GLFWwindow* window) {
 	glClearColor(0,0,0,1);
 	glEnable(GL_DEPTH_TEST);
 	skeleton.loadModel("uploads_files_600310_skeleton_animated.FBX");
+	//skeleton.loadModel("uploads_files_600310_skeleton_static.FBX");
+
+	std::cout << skeleton.verts.size() << std::endl;
 	tex = readTexture("Skeleton_Body_AlbedoTransparency.png");
 	glfwSetWindowSizeCallback(window,windowResizeCallback);
 	glfwSetKeyCallback(window,keyCallback);
