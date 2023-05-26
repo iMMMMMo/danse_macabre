@@ -43,8 +43,8 @@ void Model::loadModel(std::string plik) {
 
 	aiMesh* mesh = scene->mMeshes[0];
 
-	aiNode* rootNode = scene->mRootNode;
-	processBoneHierarchy(rootNode, mesh);
+	//aiNode* rootNode = scene->mRootNode;
+	//processBoneHierarchy(rootNode, mesh);
 
 	for (int i = 0; i < mesh->mNumVertices; i++) {
 		aiVector3D vertex = mesh->mVertices[i];
@@ -63,7 +63,6 @@ void Model::loadModel(std::string plik) {
 		verts[leftHandBoneIndices[i]] = rotateAround(verts[leftHandBoneIndices[i]], glm::vec4(0.0f, 0.0f, -20.0f, 1.0f), rotationMat);
 		//verts[leftHandBoneIndices[i]] *= glm::vec4(2.0f, 1.0f, 1.0f, 1.0f);
 	}
-
 
 
 	for (int i = 0; i < mesh->mNumFaces; i++) {

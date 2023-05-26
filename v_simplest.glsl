@@ -1,32 +1,39 @@
-﻿#version 330
+﻿
+#version 330
 
-//Uniform variables
 uniform mat4 P;
 uniform mat4 V;
 uniform mat4 M;
+uniform vec4 lightPos1;
+uniform vec4 lightPos2;
+uniform vec4 lightColor1;
+uniform vec4 lightColor2;
 
-//Attributes
-in vec4 vertex; //Vertex coordinates in model space
-in vec4 color; //vertex color
-in vec4 normal; //Vertex normal in model space
+in vec4 vertex;
+in vec4 color;
+in vec4 normal;
 in vec2 texCoord0;
 
-//Varying variables
 out vec4 ic;
-out vec4 l;
 out vec4 n;
 out vec4 v;
 out vec2 iTexCoord0;
+out vec4 l1;
+out vec4 l2;
+out vec4 lC1;
+out vec4 lC2;
 
 void main(void) {
-    vec4 lp = vec4(0, 0, -6, 1); //light position, world space
-    l = normalize(V * lp - V * M * vertex); //vector towards the light in eye space
-    v = normalize(vec4(0, 0, 0, 1) - V * M * vertex); //vector towards the viewer in eye space
-    n = normalize(V * M * normal); //normal vector in eye space
+    lC1 = lightColor1;
+    lC2 = lightColor2;
+    vec4 lp = vec4(0, 0, -6, 1); // light position, world space
+    l1 = normalize(V * lightPos1 - V * M * vertex); // vector towards the first light in eye space
+    l2 = normalize(V * lightPos2 - V * M * vertex); // vector towards the second light in eye space
+    v = normalize(vec4(0, 0, 0, 1) - V * M * vertex); // vector towards the viewer in eye space
+    n = normalize(V * M * normal); // normal vector in eye space
 
-    ic = vec4(1,1,1,0);
-
-    iTexCoord0=texCoord0;
+    ic = vec4(1, 1, 1, 0);
+    iTexCoord0 = texCoord0;
 
     gl_Position = P * V * M * vertex;
 }
