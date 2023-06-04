@@ -11,8 +11,6 @@ void Model::loadModel(std::string plik) {
 
 	aiMesh* mesh = scene->mMeshes[0];
 
-	std::cout << scene->mNumMeshes << std::endl;
-
 	for (int i = 0; i < mesh->mNumVertices; i++) {
 		aiVector3D vertex = mesh->mVertices[i];
 		verts.push_back(glm::vec4(vertex.x, vertex.y, vertex.z, 1));

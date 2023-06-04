@@ -38,22 +38,15 @@ Place, Fifth Floor, Boston, MA  02110 - 1301  USA
 #include "skeletonmovable.h"
 #include "wall.h"
 
+float gravity = 9.81 * 4;
+
+float angle_x = 0;
+
 float speed_x=0;
 float aspectRatio=1;
-glm::vec4 lightPos1 = glm::vec4(-5.0f, 0.0f, 0.0f, 1.0f);
-glm::vec4 lightPos2 = glm::vec4(5.0f, 0.0f, 0.0f, 1.0f);
-glm::vec4 lightColor1 = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
-glm::vec4 lightColor2 = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
 
 float playerY = 0;
 float playerVelY = 0;
-
-//Odkomentuj, żeby rysować kostkę
-//float* vertices = myCubeVertices;
-//float* normals = myCubeNormals;
-//float* texCoords = myCubeTexCoords;
-//float* colors = myCubeColors;
-//int vertexCount = myCubeVertexCount;
 
 
 glm::vec4 lightPos1 = glm::vec4(-60.0f, -50.0f, 20.0f, 1.0f);
@@ -141,7 +134,7 @@ GLuint readTexture(const char* filename) { //Deklaracja globalna
 
 //Procedura inicjująca
 void initOpenGLProgram(GLFWwindow* window) {
-	glClearColor(0,0,0,1);
+	glClearColor(0, 0, 0, 1);
 	glEnable(GL_DEPTH_TEST);
 
 	korpus.loadModel("korpus.fbx");
@@ -169,11 +162,10 @@ void initOpenGLProgram(GLFWwindow* window) {
 	right_wall.tex0 = readTexture("Square_BaseColor.png");
 	far_wall.tex0 = readTexture("Square_BaseColor.png");
 
-	glfwSetWindowSizeCallback(window,windowResizeCallback);
-	glfwSetKeyCallback(window,keyCallback);
+	glfwSetWindowSizeCallback(window, windowResizeCallback);
+	glfwSetKeyCallback(window, keyCallback);
 
-	sp=new ShaderProgram("v_simplest.glsl",NULL,"f_simplest.glsl");
-	sp_bg= new ShaderProgram("v_bg.glsl", NULL, "f_bg.glsl");
+	sp = new ShaderProgram("v_simplest.glsl", NULL, "f_simplest.glsl");
 }
 
 
