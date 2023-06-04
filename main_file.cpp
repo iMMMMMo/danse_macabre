@@ -150,10 +150,10 @@ void initOpenGLProgram(GLFWwindow* window) {
 	reka_p.loadModel("reka_p.fbx");
 	noga_l.loadModel("noga_l.fbx");
 	noga_p.loadModel("noga_p.fbx");
-	disco_floor.loadModel("uploads_files_4164312_Mrf+Porcelain+Tile04.FBX");
-	left_wall.loadModel("uploads_files_4164312_Mrf+Porcelain+Tile04.FBX");
-	right_wall.loadModel("uploads_files_4164312_Mrf+Porcelain+Tile04.FBX");
-	far_wall.loadModel("uploads_files_4164312_Mrf+Porcelain+Tile04.FBX");
+	disco_floor.loadModel("wall.fbx");
+	left_wall.loadModel("wall.fbx");
+	right_wall.loadModel("wall.fbx");
+	far_wall.loadModel("wall.fbx");
 
 	reka_l.setRotationPoint(glm::vec4(6.5f, 0.0f, 59.5f, 1.0f));
 	reka_p.setRotationPoint(glm::vec4(-6.5f, 0.0f, 59.5f, 1.0f));
