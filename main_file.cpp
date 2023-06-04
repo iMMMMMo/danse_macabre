@@ -31,37 +31,85 @@ Place, Fifth Floor, Boston, MA  02110 - 1301  USA
 #include <stdlib.h>
 #include <stdio.h>
 #include <iostream>
-#include "constants.h"
 #include "lodepng.h"
 #include "shaderprogram.h"
-#include "myCube.h"
-#include "myTeapot.h"
 #include "model.h"
+#include "skeleton.h"
+#include "skeletonmovable.h"
+#include "wall.h"
 
 float speed_x=0;
-float speed_y=0;
 float aspectRatio=1;
 
+float playerY = 0;
+float playerVelY = 0;
+
+float angle_x = 0; //Aktualny kąt obrotu obiektu
+
+const float gravity = 9.81 * 4;
+
+glm::vec4 lightPos1 = glm::vec4(-60.0f, -50.0f, 20.0f, 1.0f);
+glm::vec4 lightPos2 = glm::vec4(60.0f, -50.0f, 40.0f, 1.0f);
+glm::vec4 lightColor1 = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
+glm::vec4 lightColor2 = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
+
 ShaderProgram *sp;
-Model skeleton;
+Skeleton korpus;
+Skeleton czaszka;
+SkeletonMovable reka_l;
+SkeletonMovable reka_p;
+Skeleton noga_l;
+Skeleton noga_p;
+Wall disco_floor;
+Wall right_wall;
+Wall left_wall;
+Wall far_wall;
 
-//Odkomentuj, żeby rysować kostkę
-//float* vertices = myCubeVertices;
-//float* normals = myCubeNormals;
-//float* texCoords = myCubeTexCoords;
-//float* colors = myCubeColors;
-//int vertexCount = myCubeVertexCount;
+//Procedura obsługi błędów
+void error_callback(int error, const char* description) {
+	fputs(description, stderr);
+}
 
+void keyCallback(GLFWwindow* window,int key,int scancode,int action,int mods) {
+    if (action==GLFW_PRESS) {
+        if (key==GLFW_KEY_LEFT) speed_x=-3.14f/2;
+        if (key==GLFW_KEY_RIGHT) speed_x=3.14f/2;
+		if (key == GLFW_KEY_UP) {
+			if (playerY <= 0) playerVelY = 20;
+		}
+		if (key == GLFW_KEY_1) {
+			lightColor1 = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
+			lightColor2 = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
+		}
+		if (key == GLFW_KEY_2) {
+			lightColor1 = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
+			lightColor2 = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f);
+		}
+		if (key == GLFW_KEY_3) {
+			lightColor1 = glm::vec4(0.5f, 0.5f, 0.0f, 1.0f);
+			lightColor2 = glm::vec4(0.0f, 0.5f, 0.5f, 1.0f);
+		}
+		if (key == GLFW_KEY_4) {
+			lightColor1 = glm::vec4(0.8f, 0.2f, 0.6f, 1.0f);
+			lightColor2 = glm::vec4(0.4f, 0.6f, 0.9f, 1.0f);
+		}
+    }
+	if (action == GLFW_REPEAT) {
+		if (key == GLFW_KEY_UP) {
+			if (playerY <= 0) playerVelY = 20;
+		}
+	}
+    if (action==GLFW_RELEASE) {
+        if (key==GLFW_KEY_LEFT) speed_x=0;
+        if (key==GLFW_KEY_RIGHT) speed_x=0;
+    }
+}
 
-//Odkomentuj, żeby rysować czajnik
-//float* vertices = myTeapotVertices;
-//float* normals = myTeapotNormals;
-//float* texCoords = myTeapotTexCoords;
-//float* colors = myTeapotColors;
-//int vertexCount = myTeapotVertexCount;
-
-
-GLuint tex;
+void windowResizeCallback(GLFWwindow* window,int width,int height) {
+    if (height==0) return;
+    aspectRatio=(float)width/(float)height;
+    glViewport(0,0,width,height);
+}
 
 GLuint readTexture(const char* filename) { //Deklaracja globalna
 	GLuint tex;
@@ -83,44 +131,37 @@ GLuint readTexture(const char* filename) { //Deklaracja globalna
 }
 
 
-//Procedura obsługi błędów
-void error_callback(int error, const char* description) {
-	fputs(description, stderr);
-}
-
-
-void keyCallback(GLFWwindow* window,int key,int scancode,int action,int mods) {
-    if (action==GLFW_PRESS) {
-        if (key==GLFW_KEY_LEFT) speed_x=-PI/2;
-        if (key==GLFW_KEY_RIGHT) speed_x=PI/2;
-        if (key==GLFW_KEY_UP) speed_y=PI/2;
-        if (key==GLFW_KEY_DOWN) speed_y=-PI/2;
-    }
-    if (action==GLFW_RELEASE) {
-        if (key==GLFW_KEY_LEFT) speed_x=0;
-        if (key==GLFW_KEY_RIGHT) speed_x=0;
-        if (key==GLFW_KEY_UP) speed_y=0;
-        if (key==GLFW_KEY_DOWN) speed_y=0;
-    }
-}
-
-void windowResizeCallback(GLFWwindow* window,int width,int height) {
-    if (height==0) return;
-    aspectRatio=(float)width/(float)height;
-    glViewport(0,0,width,height);
-}
-
-
 //Procedura inicjująca
 void initOpenGLProgram(GLFWwindow* window) {
 	//************Tutaj umieszczaj kod, który należy wykonać raz, na początku programu************
 	glClearColor(0,0,0,1);
 	glEnable(GL_DEPTH_TEST);
-	skeleton.loadModel("uploads_files_600310_skeleton_animated.FBX");
-	//skeleton.loadModel("uploads_files_600310_skeleton_static.FBX");
 
-	std::cout << skeleton.verts.size() << std::endl;
-	tex = readTexture("Skeleton_Body_AlbedoTransparency.png");
+	korpus.loadModel("korpus.fbx");
+	czaszka.loadModel("czaszka.fbx");
+	reka_l.loadModel("reka_l.fbx");
+	reka_p.loadModel("reka_p.fbx");
+	noga_l.loadModel("noga_l.fbx");
+	noga_p.loadModel("noga_p.fbx");
+	disco_floor.loadModel("uploads_files_4164312_Mrf+Porcelain+Tile04.FBX");
+	left_wall.loadModel("uploads_files_4164312_Mrf+Porcelain+Tile04.FBX");
+	right_wall.loadModel("uploads_files_4164312_Mrf+Porcelain+Tile04.FBX");
+	far_wall.loadModel("uploads_files_4164312_Mrf+Porcelain+Tile04.FBX");
+
+	reka_l.setRotationPoint(glm::vec4(6.5f, 0.0f, 59.5f, 1.0f));
+	reka_p.setRotationPoint(glm::vec4(-6.5f, 0.0f, 59.5f, 1.0f));
+
+	korpus.tex0 = readTexture("Skeleton_Body_AlbedoTransparency.png");
+	czaszka.tex0 = readTexture("Skeleton_Body_AlbedoTransparency.png");
+	reka_l.tex0 = readTexture("Skeleton_Body_AlbedoTransparency.png");
+	reka_p.tex0 = readTexture("Skeleton_Body_AlbedoTransparency.png");
+	noga_l.tex0 = readTexture("Skeleton_Body_AlbedoTransparency.png");
+	noga_p.tex0 = readTexture("Skeleton_Body_AlbedoTransparency.png");
+	disco_floor.tex0 = readTexture("parquet_BaseColor.png");
+	left_wall.tex0 = readTexture("Square_BaseColor.png");
+	right_wall.tex0 = readTexture("Square_BaseColor.png");
+	far_wall.tex0 = readTexture("Square_BaseColor.png");
+
 	glfwSetWindowSizeCallback(window,windowResizeCallback);
 	glfwSetKeyCallback(window,keyCallback);
 
@@ -137,54 +178,66 @@ void freeOpenGLProgram(GLFWwindow* window) {
 
 
 //Procedura rysująca zawartość sceny
-void drawScene(GLFWwindow* window,float angle_x,float angle_y) {
+void drawScene(GLFWwindow* window,float angle_x) {
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glm::mat4 V = glm::lookAt(
-		glm::vec3(0.0f, 0.0f, -30.0f),
-		glm::vec3(0.0f, 0.0f, 0.0f),
-		glm::vec3(0.0f, 1.0f, 0.0f)); //compute view matrix
-	glm::mat4 P = glm::perspective(50.0f * PI / 180.0f, 1.0f, 1.0f, 50.0f); //compute projection matrix
+		glm::vec3(0.0f, -90.0f, 60.0f),
+		glm::vec3(0.0f, 0.0f, 35.0f),
+		glm::vec3(0.0f, 0.0f, 1.0f)); //compute view matrix
+	glm::mat4 P = glm::perspective(AI_DEG_TO_RAD(54), aspectRatio, 1.0f, 5000.0f); //compute projection matrix
 
 	sp->use();//activate shading program
 	//Send parameters to graphics card
 	glUniformMatrix4fv(sp->u("P"), 1, false, glm::value_ptr(P));
 	glUniformMatrix4fv(sp->u("V"), 1, false, glm::value_ptr(V));
 
-	glm::mat4 M = glm::mat4(1.0f);
-	M = glm::scale(M, glm::vec3(0.3f, 0.3f, 0.3f));
-	M = glm::translate(M, glm::vec3(0.0f, -30.0f, 0.0f));
-	M = glm::rotate(M, AI_DEG_TO_RAD(-90), glm::vec3(1.0f, 0.0f, 0.0f));
-	M = glm::rotate(M, AI_DEG_TO_RAD(180), glm::vec3(0.0f, 0.0f, 1.0f));
-	M = glm::rotate(M, angle_y, glm::vec3(5.0f, 0.0f, 0.0f)); //Compute model matrix
-	M = glm::rotate(M, angle_x, glm::vec3(0.0f, 0.0f, 5.0f)); //Compute model matrix
-	glUniformMatrix4fv(sp->u("M"), 1, false, glm::value_ptr(M));
+	glUniform4fv(sp->u("lightPos1"), 1, glm::value_ptr(lightPos1));
+	glUniform4fv(sp->u("lightPos2"), 1, glm::value_ptr(lightPos2));
+	glUniform4fv(sp->u("lightColor1"), 1, glm::value_ptr(lightColor1));
+	glUniform4fv(sp->u("lightColor2"), 1, glm::value_ptr(lightColor2));
 
-	//std::cout << skieleton.getNorms().data() << std::endl;
-	glEnableVertexAttribArray(sp->a("vertex")); //Enable sending data to the attribute vertex
-	glVertexAttribPointer(sp->a("vertex"), 4, GL_FLOAT, false, 0, skeleton.verts.data()); //Specify source of the data for the attribute vertex
+	korpus.draw(playerY, sp);
+	czaszka.draw(playerY, sp);
+	reka_l.draw(playerY, angle_x, sp);
+	reka_p.draw(playerY, -angle_x, sp);
+	noga_l.draw(playerY, sp);
+	noga_p.draw(playerY, sp);
+	disco_floor.draw(glm::mat4(1), sp);
 
-	glEnableVertexAttribArray(sp->a("normal")); //Enable sending data to the attribute color
-	glVertexAttribPointer(sp->a("normal"), 4, GL_FLOAT, false, 0, skeleton.norms.data()); //Specify source of the data for the attribute normal
+	glm::mat4 to_wall = glm::rotate(glm::mat4(1), AI_DEG_TO_RAD(90), glm::vec3(1.0f, 0.0f, 0.0f));
+	glm::mat4 to_side = glm::rotate(to_wall, AI_DEG_TO_RAD(90), glm::vec3(0.0f, 1.0f, 0.0f));
+	glm::mat4 flipped = glm::rotate(to_side, AI_DEG_TO_RAD(180), glm::vec3(1.0f, 0.0f, 0.0f));
 
-	glEnableVertexAttribArray(sp->a("texCoord0"));
-	glVertexAttribPointer(sp->a("texCoord0"), 2, GL_FLOAT, false, 0, skeleton.texCoords.data());
-
-	glUniform1i(sp->u("textureMap0"), 0);
-
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, tex);
-
-	glDrawElements(GL_TRIANGLES,skeleton.indices.size(), GL_UNSIGNED_INT, skeleton.indices.data()); //Draw the object
-
-	glDisableVertexAttribArray(sp->a("vertex")); //Disable sending data to the attribute vertex
-	glDisableVertexAttribArray(sp->a("normal")); //Disable sending data to the attribute normal
-	glDisableVertexAttribArray(sp->a("texCoord0"));
+	right_wall.draw(glm::translate(flipped, glm::vec3(0.0f, 0.0f, -50.0f)), sp);
+	left_wall.draw(glm::translate(to_side, glm::vec3(0.0f, 0.0f, -50.0f)), sp);
+	far_wall.draw(glm::translate(to_wall , glm::vec3(0.0f, 0.0f, -50.0f)), sp);
 
 	glfwSwapBuffers(window); //Copy back buffer to front buffer
 }
 
+void calcJump() {
+	double dt = glfwGetTime();
+	playerY += playerVelY * dt;
+
+	if (playerY < 0) {
+		playerY = 0;
+		playerVelY = 0;
+	}
+
+	playerVelY -= gravity * dt;
+}
+
+void calcRot() {
+	if (angle_x < -AI_DEG_TO_RAD(145)) {
+		if (speed_x < 0) speed_x = 0;
+	}
+	if (angle_x > AI_DEG_TO_RAD(25)) {
+		if (speed_x > 0) speed_x = 0;
+	}
+	angle_x += speed_x * glfwGetTime(); //Zwiększ/zmniejsz kąt obrotu na podstawie prędkości i czasu jaki upłynał od poprzedniej klatki
+}
 
 int main(void)
 {
@@ -217,15 +270,13 @@ int main(void)
 	initOpenGLProgram(window); //Operacje inicjujące
 
 	//Główna pętla
-	float angle_x=0; //Aktualny kąt obrotu obiektu
-	float angle_y=0; //Aktualny kąt obrotu obiektu
 	glfwSetTime(0); //Zeruj timer
 	while (!glfwWindowShouldClose(window)) //Tak długo jak okno nie powinno zostać zamknięte
 	{
-        angle_x+=speed_x*glfwGetTime(); //Zwiększ/zmniejsz kąt obrotu na podstawie prędkości i czasu jaki upłynał od poprzedniej klatki
-        angle_y+=speed_y*glfwGetTime(); //Zwiększ/zmniejsz kąt obrotu na podstawie prędkości i czasu jaki upłynał od poprzedniej klatki
+		calcRot();
+		calcJump();
         glfwSetTime(0); //Zeruj timer
-		drawScene(window,angle_x,angle_y); //Wykonaj procedurę rysującą
+		drawScene(window,angle_x); //Wykonaj procedurę rysującą
 		glfwPollEvents(); //Wykonaj procedury callback w zalezności od zdarzeń jakie zaszły.
 	}
 
