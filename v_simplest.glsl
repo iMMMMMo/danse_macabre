@@ -1,4 +1,5 @@
-﻿#version 330
+﻿
+#version 330
 
 uniform mat4 P;
 uniform mat4 V;
