@@ -16,9 +16,21 @@ void Skeleton::draw(float playerY, ShaderProgram* sp) {
 	glVertexAttribPointer(sp->a("texCoord0"), 2, GL_FLOAT, false, 0, texCoords.data());
 
 	glUniform1i(sp->u("textureMap0"), 0);
+	glUniform1i(sp->u("textureMap1"), 1);
+	glUniform1i(sp->u("textureMap2"), 2);
+	glUniform1i(sp->u("textureMap3"), 3);
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, tex0);
+
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, tex1);
+
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, tex2);
+
+	glActiveTexture(GL_TEXTURE3);
+	glBindTexture(GL_TEXTURE_2D, tex3);
 
 	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, indices.data()); //Draw the object
 

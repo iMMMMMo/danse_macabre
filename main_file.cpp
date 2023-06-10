@@ -36,7 +36,8 @@ Place, Fifth Floor, Boston, MA  02110 - 1301  USA
 #include "model.h"
 #include "skeleton.h"
 #include "skeletonmovable.h"
-#include "wall.h"
+#include "draw.h"
+
 
 float gravity = 9.81 * 4;
 
@@ -49,10 +50,10 @@ float playerY = 0;
 float playerVelY = 0;
 
 
-glm::vec4 lightPos1 = glm::vec4(-60.0f, -50.0f, 20.0f, 1.0f);
-glm::vec4 lightPos2 = glm::vec4(60.0f, -50.0f, 40.0f, 1.0f);
-glm::vec4 lightColor1 = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
-glm::vec4 lightColor2 = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
+glm::vec4 lightPos1 = glm::vec4(-30.0f, -75.0f, 10.0f, 1.0f);
+glm::vec4 lightPos2 = glm::vec4(30.0f, -75.0f, 10.0f, 1.0f);
+glm::vec4 lightColor1 = glm::vec4(0.0f, 0.0f, 0.8f, 0.41f);
+glm::vec4 lightColor2 = glm::vec4(0.7f, 0.0f, 0.0f, 0.37f);
 
 ShaderProgram *sp;
 Skeleton korpus;
@@ -61,10 +62,13 @@ SkeletonMovable reka_l;
 SkeletonMovable reka_p;
 Skeleton noga_l;
 Skeleton noga_p;
-Wall disco_floor;
-Wall right_wall;
-Wall left_wall;
-Wall far_wall;
+Draw disco_floor;
+Draw right_wall;
+Draw left_wall;
+Draw far_wall;
+Draw pumpkin;
+Draw spider;
+Draw candles;
 
 //Procedura obsługi błędów
 void error_callback(int error, const char* description) {
@@ -79,20 +83,20 @@ void keyCallback(GLFWwindow* window,int key,int scancode,int action,int mods) {
 			if (playerY <= 0) playerVelY = 20;
 		}
 		if (key == GLFW_KEY_1) {
-			lightColor1 = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
-			lightColor2 = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
+			lightColor1 = glm::vec4(0.65f, 0.0f, 0.0f, 0.61f);
+			lightColor2 = glm::vec4(0.0f, 0.81f, 0.0f, 0.32f);
 		}
 		if (key == GLFW_KEY_2) {
-			lightColor1 = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
-			lightColor2 = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f);
+			lightColor1 = glm::vec4(0.8f, 0.4f, 0.0f, 0.54f);
+			lightColor2 = glm::vec4(0.0f, 0.0f, 0.4f, 0.74f);
 		}
 		if (key == GLFW_KEY_3) {
-			lightColor1 = glm::vec4(0.5f, 0.5f, 0.0f, 1.0f);
-			lightColor2 = glm::vec4(0.0f, 0.5f, 0.5f, 1.0f);
+			lightColor1 = glm::vec4(0.5f, 0.5f, 0.0f, 0.32f);
+			lightColor2 = glm::vec4(0.0f, 0.5f, 0.5f, 0.41f);
 		}
 		if (key == GLFW_KEY_4) {
-			lightColor1 = glm::vec4(0.8f, 0.2f, 0.6f, 1.0f);
-			lightColor2 = glm::vec4(0.4f, 0.6f, 0.9f, 1.0f);
+			lightColor1 = glm::vec4(0.8f, 0.2f, 0.6f, 0.65f);
+			lightColor2 = glm::vec4(0.4f, 0.6f, 0.9f, 0.21f);
 		}
     }
 	if (action == GLFW_REPEAT) {
@@ -147,20 +151,77 @@ void initOpenGLProgram(GLFWwindow* window) {
 	left_wall.loadModel("wall.fbx");
 	right_wall.loadModel("wall.fbx");
 	far_wall.loadModel("wall.fbx");
+	pumpkin.loadModel("Halloween_Pumpkin.fbx");
+	spider.loadModel("spider.fbx");
+	candles.loadModel("candles.fbx");
 
 	reka_l.setRotationPoint(glm::vec4(6.5f, 0.0f, 59.5f, 1.0f));
 	reka_p.setRotationPoint(glm::vec4(-6.5f, 0.0f, 59.5f, 1.0f));
 
 	korpus.tex0 = readTexture("Skeleton_Body_AlbedoTransparency.png");
+	korpus.tex1 = readTexture("Skeleton_Body_MetallicSmoothness.png");
+	korpus.tex2 = readTexture("Skeleton_Body_Normal.png");
+	korpus.tex3 = readTexture("Skeleton_Body_DiffuseGlossiness.png");
+
 	czaszka.tex0 = readTexture("Skeleton_Body_AlbedoTransparency.png");
+	czaszka.tex1 = readTexture("Skeleton_Body_MetallicSmoothness.png");
+	czaszka.tex2 = readTexture("Skeleton_Body_Normal.png");
+	czaszka.tex3 = readTexture("Skeleton_Body_DiffuseGlossiness.png");
+
 	reka_l.tex0 = readTexture("Skeleton_Body_AlbedoTransparency.png");
+	reka_l.tex1 = readTexture("Skeleton_Body_MetallicSmoothness.png");
+	reka_l.tex2 = readTexture("Skeleton_Body_Normal.png");
+	reka_l.tex3 = readTexture("Skeleton_Body_DiffuseGlossiness.png");
+
 	reka_p.tex0 = readTexture("Skeleton_Body_AlbedoTransparency.png");
+	reka_p.tex1 = readTexture("Skeleton_Body_MetallicSmoothness.png");
+	reka_p.tex2 = readTexture("Skeleton_Body_Normal.png");
+	reka_p.tex3 = readTexture("Skeleton_Body_DiffuseGlossiness.png");
+
 	noga_l.tex0 = readTexture("Skeleton_Body_AlbedoTransparency.png");
+	noga_l.tex1 = readTexture("Skeleton_Body_MetallicSmoothness.png");
+	noga_l.tex2 = readTexture("Skeleton_Body_Normal.png");
+	noga_l.tex3 = readTexture("Skeleton_Body_DiffuseGlossiness.png");
+
 	noga_p.tex0 = readTexture("Skeleton_Body_AlbedoTransparency.png");
+	noga_p.tex1 = readTexture("Skeleton_Body_MetallicSmoothness.png");
+	noga_p.tex2 = readTexture("Skeleton_Body_Normal.png");
+	noga_p.tex3 = readTexture("Skeleton_Body_DiffuseGlossiness.png");
+
 	disco_floor.tex0 = readTexture("parquet_BaseColor.png");
+	disco_floor.tex1 = readTexture("parquet_Metallic.png");
+	disco_floor.tex2 = readTexture("parquet_Normal.png");
+	disco_floor.tex3 = readTexture("parquet_Roughness.png");
+
 	left_wall.tex0 = readTexture("Square_BaseColor.png");
+	left_wall.tex1 = readTexture("Square_Height.png");
+	left_wall.tex2 = readTexture("Square_Normal.png");
+	left_wall.tex3 = readTexture("Square_Roughness.png");
+
 	right_wall.tex0 = readTexture("Square_BaseColor.png");
+	right_wall.tex1 = readTexture("Square_Height.png");
+	right_wall.tex2 = readTexture("Square_Normal.png");
+	right_wall.tex3 = readTexture("Square_Roughness.png");
+
 	far_wall.tex0 = readTexture("Square_BaseColor.png");
+	far_wall.tex1 = readTexture("Square_Height.png");
+	far_wall.tex2 = readTexture("Square_Normal.png");
+	far_wall.tex3 = readTexture("Square_Roughness.png");
+
+	pumpkin.tex0 = readTexture("pumpkin_Base_Color.png");
+	pumpkin.tex1 = readTexture("pumpkin_Height.png");
+	pumpkin.tex2 = readTexture("pumpkin_Normal.png");
+	pumpkin.tex3 = readTexture("pumpkin_Roughness.png");
+
+	spider.tex0 = readTexture("spider_black.png");
+	spider.tex1 = readTexture("spider_black.png");
+	spider.tex2 = readTexture("spider_black.png");
+	spider.tex3 = readTexture("spider_black.png");
+
+	candles.tex0 = readTexture("Candle_Normal.png");
+	candles.tex1 = readTexture("Candle_Normal.png");
+	candles.tex2 = readTexture("Candle_Normal.png");
+	candles.tex3 = readTexture("Candle_Normal.png");
 
 	glfwSetWindowSizeCallback(window, windowResizeCallback);
 	glfwSetKeyCallback(window, keyCallback);
@@ -202,15 +263,20 @@ void drawScene(GLFWwindow* window,float angle_x) {
 	reka_p.draw(playerY, -angle_x, sp);
 	noga_l.draw(playerY, sp);
 	noga_p.draw(playerY, sp);
-	disco_floor.draw(glm::mat4(1), sp);
+	disco_floor.draw(glm::mat4(1), glm::vec3(.5f, .5f, .5f), sp);
+	
 
 	glm::mat4 to_wall = glm::rotate(glm::mat4(1), AI_DEG_TO_RAD(90), glm::vec3(1.0f, 0.0f, 0.0f));
 	glm::mat4 to_side = glm::rotate(to_wall, AI_DEG_TO_RAD(90), glm::vec3(0.0f, 1.0f, 0.0f));
 	glm::mat4 flipped = glm::rotate(to_side, AI_DEG_TO_RAD(180), glm::vec3(1.0f, 0.0f, 0.0f));
 
-	right_wall.draw(glm::translate(flipped, glm::vec3(0.0f, 0.0f, -50.0f)), sp);
-	left_wall.draw(glm::translate(to_side, glm::vec3(0.0f, 0.0f, -50.0f)), sp);
-	far_wall.draw(glm::translate(to_wall , glm::vec3(0.0f, 0.0f, -50.0f)), sp);
+	right_wall.draw(glm::translate(flipped, glm::vec3(0.0f, 0.0f, -50.0f)), glm::vec3(.5f, .5f, .5f), sp);
+	left_wall.draw(glm::translate(to_side, glm::vec3(0.0f, 0.0f, -50.0f)), glm::vec3(.5f, .5f, .5f), sp);
+	far_wall.draw(glm::translate(to_wall , glm::vec3(0.0f, 0.0f, -50.0f)), glm::vec3(.5f, .5f, .5f), sp);
+
+	pumpkin.draw(glm::translate(glm::mat4(1), glm::vec3(30.0f, 25.0f, 0.0f)), glm::vec3(35.0f, 35.0f, 35.0f), sp);
+	spider.draw(glm::translate(to_wall, glm::vec3(-25.0f, 15.0f, 0.0f)), glm::vec3(1.0f, 1.0f, 1.0f), sp);
+	candles.draw(glm::translate(glm::mat4(1), glm::vec3(15.0f, 35.0f, 5.0f)), glm::vec3(5.0f, 5.0f, 5.0f), sp);
 
 	glfwSwapBuffers(window); //Copy back buffer to front buffer
 }

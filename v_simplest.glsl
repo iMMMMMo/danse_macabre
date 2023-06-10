@@ -1,6 +1,4 @@
-﻿
 #version 330
-
 uniform mat4 P;
 uniform mat4 V;
 uniform mat4 M;
@@ -13,11 +11,17 @@ in vec4 vertex;
 in vec4 color;
 in vec4 normal;
 in vec2 texCoord0;
+in vec2 texCoord1;
+in vec2 texCoord2;
+in vec2 texCoord3;
 
 out vec4 ic;
 out vec4 n;
 out vec4 v;
 out vec2 iTexCoord0;
+out vec2 iTexCoord1;
+out vec2 iTexCoord2;
+out vec2 iTexCoord3;
 out vec4 l1;
 out vec4 l2;
 out vec4 lC1;
@@ -30,9 +34,11 @@ void main(void) {
     l2 = normalize(V * lightPos2 - V * M * vertex); // vector towards the second light in eye space
     v = normalize(vec4(0, 0, 0, 1) - V * M * vertex); // vector towards the viewer in eye space
     n = normalize(V * M * normal); // normal vector in eye space
-
     ic = vec4(1, 1, 1, 0);
     iTexCoord0 = texCoord0;
+    iTexCoord1 = texCoord1;
+    iTexCoord2 = texCoord2;
+    iTexCoord3 = texCoord3;
 
     gl_Position = P * V * M * vertex;
 }
