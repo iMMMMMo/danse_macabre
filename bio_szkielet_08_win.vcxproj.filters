@@ -30,7 +30,10 @@
     <ClInclude Include="skeletonmovable.h">
       <Filter>Pliki nagłówkowe</Filter>
     </ClInclude>
-    <ClInclude Include="wall.h">
+    <ClInclude Include="draw.h">
+      <Filter>Pliki nagłówkowe</Filter>
+    </ClInclude>
+    <ClInclude Include="bone.h">
       <Filter>Pliki nagłówkowe</Filter>
     </ClInclude>
   </ItemGroup>
@@ -53,7 +56,10 @@
     <ClCompile Include="skeletonmovable.cpp">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
-    <ClCompile Include="wall.cpp">
+    <ClCompile Include="draw.cpp">
+      <Filter>Pliki źródłowe</Filter>
+    </ClCompile>
+    <ClCompile Include="bone.cpp">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
   </ItemGroup>
@@ -62,12 +68,6 @@
       <Filter>Pliki zasobów</Filter>
     </None>
     <None Include="v_simplest.glsl">
-      <Filter>Pliki zasobów</Filter>
-    </None>
-    <None Include="f_bg.glsl">
-      <Filter>Pliki zasobów</Filter>
-    </None>
-    <None Include="v_bg.glsl">
       <Filter>Pliki zasobów</Filter>
     </None>
   </ItemGroup>
